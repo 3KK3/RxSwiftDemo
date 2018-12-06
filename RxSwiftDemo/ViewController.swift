@@ -17,6 +17,11 @@ class ViewController: UIViewController {
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var topLabel: UILabel!
     
+    var searchBar :UISearchBar = {
+        let searchBar = UISearchBar.init()
+        return searchBar
+    }()
+    
     var viewModel: ViewModel!
     
     @IBAction func getTimeAction(_ sender: UIButton) {
@@ -109,5 +114,26 @@ class ViewController: UIViewController {
         let output = self.viewModel.getServiceTime(input: input)
         output.currentTime.drive(self.timeLabel.rx.text).disposed(by: bag)
     }
+    
+    // searchbar 搜索绑定label
+    func serarchBarObserver() {
+        
+        searchBar
+            .rx
+            .text
+            .orEmpty
+            .debounce(1, scheduler: MainScheduler.instance)
+            .distinctUntilChanged()
+            .filter { (e) -> Bool in
+            !e.isEmpty
+            }
+            .subscribe(onNext: { [unowned self] query in
+                self.timeLabel.text = query
+            })
+            .disposed(by: bag)
+    }
+    
+    
+    
 }
 
